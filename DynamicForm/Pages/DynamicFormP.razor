@@ -1,0 +1,74 @@
+﻿@page "/dynamicform"
+
+<h3>DynamicForm</h3>
+<form>
+    @for (int i = 0; i < models.Count; i++)
+    {
+        var ind = i;
+    <EditForm EditContext="contexts[ind]">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        @*<InputText placeholder="key" @value="models[ind].Key" ValueExpression="()=>models[ind].Key" @onchange="(e => {models[ind].Key=e.Value.ToString(); Validate(); } )"/>
+        <InputText placeholder="value" @value="models[ind].Value" ValueExpression="()=>models[ind].Value" @onchange="(e => {models[ind].Value=e.Value.ToString(); Validate(); } )" />*@
+        <InputText placeholder="key" @bind-Value="models[ind].Key" @onkeydown=Validate />
+        <InputText placeholder="value" @bind-Value="models[ind].Value" @onkeydown=Validate />
+        <InputNumber @bind-Value="models[ind].Number" @onkeydown=Validate />
+        @if (ind != 0)
+        {
+            <button @onclick:preventDefault="true" @onclick="@(() => { models.RemoveAt(ind); contexts.RemoveAt(ind); })">×</button>
+        }
+    </EditForm>
+    }
+    <button @onclick=@(() => { var model = new SampleModel(); models.Add(model); contexts.Add(new EditContext(model)); }) @onclick:preventDefault="true">行を追加</button>
+    <button @onclick:preventDefault="true" @onclick=OnSubmit disabled="@(!IsValid)">送信</button>
+    <button @onclick:preventDefault="true" @onclick=OnSubmit>検証</button>
+</form>
+
+@code {
+    private class SampleModel
+    {
+        //public string Key { get { return key; } set { key = value; } }
+        ////[Required(ErrorMessage = "値は必須です")]
+        //public string Value { get { return _value; } set { _value = value; } }
+        [Required(ErrorMessage = "キーは必須です")]
+        [StringLength(3, ErrorMessage = "キーが長すぎます")]
+        public string Key { get; set; } = "";
+        public string Value { get; set; } = "";
+        [Range(0,100,ErrorMessage ="数が範囲外です")]
+        public int Number { get; set; } = 0;
+
+        //private string key;
+        //private string _value;
+    }
+
+    private SampleModel test = new SampleModel();
+    private bool IsValid { get; set; }
+
+    private List<SampleModel> models;
+    private List<EditContext> contexts;
+
+    protected override void OnInitialized()
+    {
+        models = new List<SampleModel> { test };
+        contexts = new List<EditContext> { new EditContext(test) };
+        IsValid = false;
+    }
+
+    private void OnSubmit()
+    {
+        Validate();
+        Console.WriteLine("いいね！");
+    }
+
+    private void Validate()
+    {
+        IsValid = true;
+        foreach (var context in contexts)
+        {
+            IsValid = IsValid && context.Validate();
+
+            //Console.WriteLine(models[0].Key);
+            Console.WriteLine(IsValid);
+        }
+    }
+}

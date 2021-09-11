@@ -1,0 +1,34 @@
+﻿@page "/testform"
+
+<h3>TestForm</h3>
+
+    <EditForm EditContext="ctx">
+    @*<EditForm Model="test">*@
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <InputText placeholder="key" @bind-Value="test.Key" />
+        <InputText placeholder="value" @bind-Value="test.Value" />
+        <button type="submit" @onclick:preventDefault="true" @onclick=OnSubmit>送信！</button>
+    </EditForm>
+
+
+@code {
+    private class SampleModel
+    {
+        [Required(ErrorMessage = "キーは必須です")]
+        [StringLength(3, ErrorMessage = "キーが長すぎます")]
+        public string Key { get; set; }
+        [Required(ErrorMessage = "値は必須です")]
+        public string Value { get; set; }
+    }
+
+    private SampleModel test=new SampleModel();
+    private EditContext ctx;
+    protected override void OnInitialized()
+    { ctx = new EditContext(test); }
+
+    private void OnSubmit()
+    {
+        Console.WriteLine(ctx.Validate());
+    }
+}
